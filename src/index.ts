@@ -1,34 +1,33 @@
-import express from 'express'
-import { ApolloServer, gql } from 'apollo-server-express'
+import express, { Application } from 'express';
+import { ApolloServer, gql } from 'apollo-server-express';
 
 const typeDefs = gql`
     type Query {
         hello: String
     }
-`
+`;
 
 const resolvers = {
     Query: {
-        hello: () => 'Hello, world!',
+        hello: (): string => 'Hello, world!',
     },
-}
+};
 
-const app = express()
+async function startApolloServer(): Promise<void> {
+    const app: Application = express();
+    const server: ApolloServer = new ApolloServer({ typeDefs, resolvers });
 
-async function startApolloServer() {
-    const server = new ApolloServer({ typeDefs, resolvers })
+    await server.start();
 
-    await server.start()
+    server.applyMiddleware({ app });
 
-    server.applyMiddleware({ app })
-
-    const PORT = process.env.PORT || 4000
+    const PORT: number = parseInt(process.env.PORT as string, 10) || 4000;
 
     app.listen(PORT, () => {
         console.log(
             `Server is running on http://localhost:${PORT}${server.graphqlPath}`,
-        )
-    })
+        );
+    });
 }
 
-startApolloServer()
+startApolloServer();
